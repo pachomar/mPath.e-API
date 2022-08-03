@@ -1,0 +1,10 @@
+{
+  "lambda": {
+    "role": "cvmf-api-executor",
+    "name": "cvmf-api",
+    "region": "us-east-2"
+  },
+  "api": {
+    "id": "4fpdw9timh"
+  }
+}

@@ -1,0 +1,1394 @@
+openapi: 3.0.0
+info:
+  title: Cobb Veterans Memorial API
+  description: OpenAPIs created for user and veteran information in the Cobb application
+  version: 1.0.0
+servers:
+  - url: https://4fpdw9timh.execute-api.us-east-2.amazonaws.com/latest
+    description: AWS default lambda function url
+paths:
+  /user/create:
+    post:
+      summary: Creates a UserLogin and all it's related entities
+      description: Creates a new db record in UserLogin, UserRole, UserProfile and UserNotification
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be created
+      - in: query
+        name: userPass
+        required: true
+        schema: 
+          type: string
+          minLength: 8
+          example: P4ssw0rd
+          description: Specified password by the user
+      - in: query
+        name: verifCode
+        required: true
+        schema: 
+          type: number
+          maximum: 999999
+          example: 123456      
+          description: Specified code by the application
+      responses:
+        '200':    # status code
+          description: A JSON object with the user created
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+                  Roles: 
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      IsProctor: 
+                        type: boolean
+                      IsAdministrator: 
+                        type: boolean
+                      IsContributor:
+                        type: boolean
+                  Profile:
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      FirstName:
+                        type: string
+                      MiddleName:
+                        type: string
+                      MaidenName:
+                        type: string
+                      LastName:
+                        type: string
+                      Suffix:
+                        type: string
+                      Facebook:
+                        type: string
+                      Instagram:
+                        type: string
+                      Linkedin:
+                        type: string
+                      Twitter:
+                        type: string
+                      SecurityPin:
+                        type: string
+                  Notifications:
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      PushActive:
+                        type: boolean
+                      FeedActive: 
+                        type: boolean
+                      EventActive:
+                        type: boolean
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/profile:
+    post:
+      summary: Updates the profile information for a specific user
+      description: Updates an existing record in the UserProfile table with user information
+      parameters:
+      - in: body
+        name: userId
+        required: true
+        schema: 
+          type: object
+          properties:
+            UserId: 
+              type: string
+            FirstName:
+              type: string
+            MiddleName:
+              type: string
+            MaidenName:
+              type: string
+            LastName:
+              type: string
+            Suffix:
+              type: string
+            Facebook:
+              type: string
+            Instagram:
+              type: string
+            Linkedin:
+              type: string
+            Twitter:
+              type: string
+            UserImage:
+              type: string
+      responses:
+        '200':    # status code
+          description: A JSON object with the profile entity modified
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  UserId: 
+                    type: string
+                  FirstName:
+                    type: string
+                  MiddleName:
+                    type: string
+                  MaidenName:
+                    type: string
+                  LastName:
+                    type: string
+                  Suffix:
+                    type: string
+                  Facebook:
+                    type: string
+                  Instagram:
+                    type: string
+                  Linkedin:
+                    type: string
+                  Twitter:
+                    type: string
+                  UserImage:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/settings:
+    post:
+      summary: Updates the settings for a specific user
+      description: Updates an existing record in the UserProfile and UserNotification table with user information
+      parameters:
+      - in: body
+        name: settings
+        required: true
+        schema: 
+          type: object
+          properties:
+            UserId: 
+              type: string
+            UserName:
+              type: string
+            UserPhone:
+              type: string
+            UserEmail:
+              type: string
+            Pin:
+              type: number
+            Feed:
+              type: boolean
+            Push:
+              type: boolean
+            Event:
+              type: boolean
+      responses:
+        '200':    # status code
+          description: A JSON object with an indicator the email changed
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  UserId: 
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone:
+                    type: string
+                  UserEmail:
+                    type: string
+                  Pin:
+                    type: number
+                  Feed:
+                    type: boolean
+                  Push:
+                    type: boolean
+                  Event:
+                    type: boolean
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/notification:
+    post:
+      summary: Updates the notification settings for a specific user
+      description: Updates an existing record in the UserNotification table with user preferences
+      parameters:
+      - in: query
+        name: userId
+        required: true
+        schema: 
+          type: string
+          example: Insert an existing UserId here
+          description: Id from the UserLogin whose notifications will be updated
+      - in: query
+        name: push
+        required: true
+        schema: 
+          type: boolean
+          example: true
+          description: Specified push notification setting
+      - in: query
+        name: event
+        required: true
+        schema: 
+          type: boolean
+          example: false      
+          description: Specified event notification setting
+      - in: query
+        name: feed
+        required: true
+        schema: 
+          type: boolean
+          example: false      
+          description: Specified feed notification setting
+      responses:
+        '200':    # status code
+          description: A JSON object with the notification entity modified
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId: 
+                    type: string
+                  PushActive:
+                    type: boolean
+                  FeedActive: 
+                    type: boolean
+                  EventActive:
+                    type: boolean
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/reset:
+    put:
+      summary: Updates the user password after a password reset request
+      description: Updates an existing record in the UserLogin table with a new password
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be updated
+      - in: query
+        name: newPass
+        required: true
+        schema: 
+          type: string
+          minLength: 8
+          example: P4ssw0rd
+          description: New password specified by the user
+      responses:
+        '200':    # status code
+          description: A JSON object with the user login modified entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/verify:
+    put:
+      summary: Verifies a newly created user login after code verification
+      description: Updates an existing record in the UserLogin table with IsVerified to true
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be updated
+      - in: query
+        name: verifCode
+        required: true
+        schema: 
+          type: number
+          maximum: 999999
+          example: 123456      
+          description: Specified code provided by the user
+      responses:
+        '200':    # status code
+          description: A JSON object with the user login modified entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/validate:
+    get:
+      summary: Checks that the email and the verification code match the same user
+      description: Compares de values of the Email and LatestCode in the UserLogin table
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be updated
+      - in: query
+        name: verifCode
+        required: true
+        schema: 
+          type: number
+          maximum: 999999
+          example: 123456      
+          description: Specified code provided by the user
+      responses:
+        '200':    # status code
+          description: A JSON object with the user login modified entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/login:
+    get:
+      summary: Validates the specified email and password for login
+      description: Checks the record in UserLogin to find a matching UserEmail and UserPwd
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be created
+      - in: query
+        name: userPwd
+        required: true
+        schema: 
+          type: string
+          minLength: 8
+          example: P4ssw0rd
+          description: Specified password by the user
+      responses:
+        '200':    # status code
+          description: A JSON object with the lohhed user information
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+                  Roles: 
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      IsProctor: 
+                        type: boolean
+                      IsAdministrator: 
+                        type: boolean
+                      IsContributor:
+                        type: boolean
+                  Profile:
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      FirstName:
+                        type: string
+                      MiddleName:
+                        type: string
+                      MaidenName:
+                        type: string
+                      LastName:
+                        type: string
+                      Suffix:
+                        type: string
+                      Facebook:
+                        type: string
+                      Instagram:
+                        type: string
+                      Linkedin:
+                        type: string
+                      Twitter:
+                        type: string
+                      SecurityPin:
+                        type: string
+                  Notifications:
+                    type: object
+                    properties:
+                      UserId: 
+                        type: string
+                      PushActive:
+                        type: boolean
+                      FeedActive: 
+                        type: boolean
+                      EventActive:
+                        type: boolean
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /user/resend:
+    get:
+      summary: Sends an email with a new verification code to the user
+      description: Updates an existing record in the UserLogin table with te new LatestCode
+      parameters:
+      - in: query
+        name: userEmail
+        required: true
+        schema: 
+          type: string
+          format: email
+          example: test@email.com
+          description: Email of the user to be updated
+      - in: query
+        name: verifCode
+        required: true
+        schema: 
+          type: number
+          maximum: 999999
+          example: 123456      
+          description: Specified code provided by the user
+      responses:
+        '200':    # status code
+          description: A JSON object with the user login modified entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  UserId:
+                    type: string
+                  IsVerified: 
+                    type: boolean
+                  IsLocked: 
+                    type: boolean
+                  FailedAttempts:
+                    type: number
+                  TermsAgreement: 
+                    type: boolean
+                  UserEmail:
+                    type: string
+                  UserPwd:
+                    type: string
+                  LatestCode:
+                    type: string
+                  UserName:
+                    type: string
+                  UserPhone: 
+                    type: string
+                  QuestionId:
+                    type: string
+                  QuestionAnswer:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/basic:
+    post:
+      summary: Creates/updates veteran information from the initial profile screen information
+      description: A record is either created or updated in VeteranInfo, VeteranOwner and UserProfile
+      parameters:
+      - in: body
+        name: veteran
+        required: true
+        schema: 
+        type: object
+        properties: 
+          VeteranId: 
+            type: string
+          FirstName: 
+            type: string
+          MiddleName: 
+            type: string
+          LastName: 
+            type: string
+          Suffix: 
+            type: string
+          BirthMonth: 
+            type: number
+          BirthDay: 
+            type: number
+          BirthYear: 
+            type: number
+          City: 
+            type: string
+          StateCode: 
+            type: string
+          Country: 
+            type: string
+          IsDeceased: 
+            type: boolean
+          DeathMonth: 
+            type: number
+          DeathDay: 
+            type: number
+          DeathYear: 
+            type: number
+          CauseId: 
+            type: number
+          BurialId:
+            type: number
+      - in: body
+        name: owner
+        required: true
+        schema: 
+        type: object
+        properties: 
+          VeteranId: 
+            type: string
+          UserId: 
+            type: string
+          RelationshipId: 
+            type: number
+          IsOwn: 
+            type: boolean
+          IsHelp: 
+            type: boolean
+          IsOther: 
+            type: boolean
+      responses:
+        '200':    # status code
+          description: A JSON object with the modified vetern info entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  VeteranId: 
+                    type: string
+                  FirstName: 
+                    type: string
+                  MiddleName: 
+                    type: string
+                  LastName: 
+                    type: string
+                  Suffix: 
+                    type: string
+                  BirthMonth: 
+                    type: number
+                  BirthDay: 
+                    type: number
+                  BirthYear: 
+                    type: number
+                  City: 
+                    type: string
+                  StateCode: 
+                    type: string
+                  Country: 
+                    type: string
+                  IsDeceased: 
+                    type: boolean
+                  DeathMonth: 
+                    type: number
+                  DeathDay: 
+                    type: number
+                  DeathYear: 
+                    type: number
+                  CauseId: 
+                    type: number
+                  BurialId:
+                    type: number
+                  Owner:
+                    type: object
+                    properties:
+                      VeteranId: 
+                        type: string
+                      UserId: 
+                        type: string
+                      RelationshipId: 
+                        type: number
+                      IsOwn: 
+                        type: boolean
+                      IsHelp: 
+                        type: boolean
+                      IsOther: 
+                        type: boolean
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/service:
+    post:
+      summary: Updates veteran information from the second profile screen information
+      description: The corresponding record in VeteranInfo is updated with additional information
+      parameters:
+      - in: body
+        name: veteran
+        required: true
+        schema: 
+          type: object
+          properties:
+            VeteranId: 
+              type: string
+            BranchId: 
+              type: number
+            EnlistMonth: 
+              type: number
+            EnlistDay: 
+              type: number
+            EnlistYear: 
+              type: number
+            EntryCity: 
+              type: string
+            EntryState: 
+              type: string
+            CompletedMonth: 
+              type: number
+            CompletedDay: 
+              type: number
+            CompletedYear: 
+              type: number
+            IsDeceased: 
+              type: boolean
+            TypeId: 
+              type: number
+            RankId:
+              type: number
+      responses:
+        '200':    # status code
+          description: A JSON object with the modified veteran info entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  VeteranId: 
+                    type: string
+                  BranchId: 
+                    type: number
+                  EnlistMonth: 
+                    type: number
+                  EnlistDay: 
+                    type: number
+                  EnlistYear: 
+                    type: number
+                  EntryCity: 
+                    type: string
+                  EntryState: 
+                    type: string
+                  CompletedMonth: 
+                    type: number
+                  CompletedDay: 
+                    type: number
+                  CompletedYear: 
+                    type: number
+                  IsDeceased: 
+                    type: boolean
+                  TypeId: 
+                    type: number
+                  RankId:
+                    type: number
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/titles:
+    post:
+      summary: Updates veteran information from the third profile screen information
+      description: The records in VeteranMOS, VeteranAward, VeteranEngagement and VeteranUnit are created
+      parameters:
+      - in: body
+        name: veteran
+        required: true
+        schema: 
+          type: object
+          properties:
+            VeteranId: 
+              type: string
+            MOSCodes: 
+              type: array
+              items:
+                properties:
+                  VeteranId: 
+                    type: string
+                  MOSCode:
+                    type: string
+                  MOSName:
+                    type: string
+                  SortOrder:
+                    type: number
+            Units: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Unit:
+                    type: string
+                  SortOrder:
+                    type: number
+            Engagements: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Engagement:
+                    type: string
+                  SortOrder:
+                    type: number 
+            Awards: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Award:
+                    type: string
+                  SortOrder:
+                    type: number
+            Badges: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Badge:
+                    type: string
+                  SortOrder:
+                    type: number
+      responses:
+        '200':    # status code
+          description: A JSON object with the modified veteran info entity
+          content:
+            application/json:
+              schema: 
+                type: object
+          properties:
+            VeteranId: 
+              type: string
+            MOSCodes: 
+              type: array
+              items:
+                properties:
+                  VeteranId: 
+                    type: string
+                  MOSCode:
+                    type: string
+                  MOSName:
+                    type: string
+                  SortOrder:
+                    type: number
+            Units: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Unit:
+                    type: string
+                  SortOrder:
+                    type: number
+            Engagements: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Engagement:
+                    type: string
+                  SortOrder:
+                    type: number 
+            Awards: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Award:
+                    type: string
+                  SortOrder:
+                    type: number
+            Badges: 
+              type: array
+              items:
+                properties:
+                  VeteranId:
+                    type: string
+                  Badge:
+                    type: string
+                  SortOrder:
+                    type: number
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/media:
+    put:
+      summary: Creates a record of media (currently only images) for a veteran
+      description: A new record in VeteranMedia is created, and images stored
+      parameters:
+      - in: body
+        name: media
+        required: true
+        schema: 
+          type: object
+          properties:
+            VeteranId: 
+              type: string
+            IsProfile: 
+              type: boolean
+            Comments: 
+              type: string
+            Tags: 
+              type: string
+            ImageStr: 
+              type: string
+            SortOrder:
+              type: number
+      responses:
+        '200':    # status code
+          description: A JSON object with the inserted veteran media entity
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  VeteranId: 
+                    type: string
+                  IsProfile: 
+                    type: boolean
+                  Comments: 
+                    type: string
+                  Tags: 
+                    type: string
+                  ImageStr: 
+                    type: string
+                  SortOrder:
+                    type: number
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/submit:
+    put:
+      summary: Submits a veteran profile for proctor approval
+      description: An email is sent to the specified proctor with the veteran info just modified
+      parameters:
+      - in: body
+        name: info
+        required: true
+        schema: 
+          type: object
+          properties:
+            VeteranId: 
+              type: string
+            UserId: 
+              type: string
+            UserEmail: 
+              type: string
+      responses:
+        '200':    # status code
+          description: A message confirming an email was sent to the proctor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  success:
+                    type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/search:
+    get:
+      summary: Search veterans with different filters, returning an array of matches
+      description: Returns a list of matching veterans with simplified information
+      parameters:
+      - in: query
+        name: searchValue
+        required: true
+        schema: 
+          type: string
+      - in: query
+        name: branch
+        required: true
+        schema: 
+          type: number
+      - in: query
+        name: unit
+        required: true
+        schema: 
+          type: boolean
+      - in: query
+        name: buried
+        required: true
+        schema: 
+          type: number
+      - in: query
+        name: mos
+        required: true
+        schema: 
+          type: string
+      - in: query
+        name: conflict
+        required: true
+        schema: 
+          type: boolean
+      - in: query
+        name: award
+        required: true
+        schema: 
+          type: boolean
+      - in: query
+        name: branch
+        required: true
+        schema: 
+          type: number
+      responses:
+        '200':    # status code
+          description: A JSON object with the minified list of veterans
+          content:
+            application/json:
+              schema: 
+                  type: array
+                  items:
+                    properties:
+                      Id: 
+                        type: string
+                      Name:
+                        type: string
+                      Branch:
+                        type: string
+                      Rank:
+                        type: string
+                      Image:
+                        type: string
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/profile:
+    get:
+      summary: Obtains a specific veteran information based on his unique id
+      description: Obtains information from VeteranInfo, VeteranOwner, VeteranMOS, VeteranUnit, VeteranAward, VeteranEngagement
+      parameters:
+      - in: query
+        name: veteranId
+        required: true
+        schema: 
+          type: string
+          description: Id of the Veteran which all the information will be obtained
+      responses:
+        '200':    # status code
+          description: A JSON object with the veteran info entity and sub-entities
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  VeteranId: 
+                    type: string
+                  FirstName: 
+                    type: string
+                  MiddleName: 
+                    type: string
+                  LastName: 
+                    type: string
+                  Suffix: 
+                    type: string
+                  BirthMonth: 
+                    type: number
+                  BirthDay: 
+                    type: number
+                  BirthYear: 
+                    type: number
+                  City: 
+                    type: string
+                  StateCode: 
+                    type: string
+                  Country: 
+                    type: string
+                  IsDeceased: 
+                    type: boolean
+                  DeathMonth: 
+                    type: number
+                  DeathDay: 
+                    type: number
+                  DeathYear: 
+                    type: number
+                  CauseId: 
+                    type: number
+                  BurialId:
+                    type: number
+                  BranchId: 
+                    type: number
+                  EnlistMonth: 
+                    type: number
+                  EnlistDay: 
+                    type: number
+                  EnlistYear: 
+                    type: number
+                  EntryCity: 
+                    type: string
+                  EntryState: 
+                    type: string
+                  CompletedMonth: 
+                    type: number
+                  CompletedDay: 
+                    type: number
+                  CompletedYear: 
+                    type: number
+                  IsDeceased: 
+                    type: boolean
+                  TypeId: 
+                    type: number
+                  RankId:
+                    type: number
+                  DeathCause: 
+                    type: string
+                  BurialPlace: 
+                    type: string
+                  Branch: 
+                    type: string
+                  Rank: 
+                    type: string
+                  SeparationType:
+                    type: string
+                  Profile: 
+                    type: string
+                  Insignia: 
+                    type: string
+                  InsigniaH: 
+                    type: number
+                  InsigniaW:
+                    type: number
+                  Owner:
+                    type: object
+                    properties:
+                      VeteranId: 
+                        type: string
+                      UserId: 
+                        type: string
+                      RelationshipId: 
+                        type: number
+                      IsOwn: 
+                        type: boolean
+                      IsHelp: 
+                        type: boolean
+                      IsOther: 
+                        type: boolean
+                  MOSCodes: 
+                    type: array
+                    items:
+                      properties:
+                        VeteranId: 
+                          type: string
+                        MOSCode:
+                          type: string
+                        MOSName:
+                          type: string
+                        SortOrder:
+                          type: number
+                  Units: 
+                    type: array
+                    items:
+                      properties:
+                        VeteranId:
+                          type: string
+                        Unit:
+                          type: string
+                        SortOrder:
+                          type: number
+                  Engagements: 
+                    type: array
+                    items:
+                      properties:
+                        VeteranId:
+                          type: string
+                        Engagement:
+                          type: string
+                        SortOrder:
+                          type: number 
+                  Awards: 
+                    type: array
+                    items:
+                      properties:
+                        VeteranId:
+                          type: string
+                        Award:
+                          type: string
+                        SortOrder:
+                          type: number
+                  Badges: 
+                    type: array
+                    items:
+                      properties:
+                        VeteranId:
+                          type: string
+                        Badge:
+                          type: string
+                        SortOrder:
+                          type: number
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
+  /veteran/story:
+    get:
+      summary: Gets veteran stories including media (currently only images supported)
+      description: Gets all the records form VeteranMedia where IsProfile is false
+      parameters:
+      - in: query
+        name: veteranId
+        required: true
+        schema: 
+          type: string
+      responses:
+        '200':    # status code
+          description: A JSON object with the minified list of veterans
+          content:
+            application/json:
+              schema: 
+                  type: array
+                  items:
+                    properties:
+                      VeteranId: 
+                        type: string
+                      IsProfile:
+                        type: boolean
+                      Comments:
+                        type: string
+                      Tags:
+                        type: string
+                      ImageSrc:
+                        type: string
+                      Height:
+                        type: number
+                      Width:
+                        type: number
+                      SortOrder:
+                        type: number
+        '500':
+          description: An error message scpecifying exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  error:
+                    type: string
